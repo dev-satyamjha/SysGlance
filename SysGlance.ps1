@@ -41,7 +41,18 @@ foreach ($stick in $memory) {
     Write-Host "Soldered            : $(if ($stick.FormFactor -eq 12 -or $stick.FormFactor -eq 8) { "No" } else { "Possibly Yes" })"
 }
 
+Write-Host "`n========= VIDEO INFORMATION =========`n"
+
+$video = Get-WmiObject Win32_VideoController
+foreach ($gpu in $video) {
+    Write-Host "GPU Name            : $($gpu.Name)"
+    Write-Host "VRAM Available      : $([math]::Round($gpu.AdapterRAM / 1MB, 2)) MB"
+    Write-Host "Driver Version      : $($gpu.DriverVersion)"
+    Write-Host "Video Processor     : $($gpu.VideoProcessor)"
+}
+
 Write-Host "`n========= CPU INFORMATION =========`n"
+
 $cpu = Get-WmiObject Win32_Processor
 foreach ($c in $cpu) {
     Write-Host "Name                : $($c.Name)"
@@ -60,4 +71,18 @@ try {
     }
 } catch {
     Write-Host "CPU Temperature     : Not Available"
+}
+
+Write-Host "`n========= DISK INFORMATION =========`n"
+
+$physicalDisks = Get-PhysicalDisk
+Write-Host "Total Disk Slots    : $($physicalDisks.Count)"
+foreach ($disk in $physicalDisks) {
+    $diskNumber = (Get-Disk | Where-Object { $_.FriendlyName -eq $disk.FriendlyName }).Number
+    Write-Host "`n--- Disk #$diskNumber ---"
+    Write-Host "Model               : $($disk.FriendlyName)"
+    Write-Host "Size                : $([math]::Round($disk.Size / 1GB, 2)) GB"
+    Write-Host "Bus Type            : $($disk.BusType)"
+    Write-Host "Media Type          : $($disk.MediaType)"
+    Write-Host "Health Status       : $($disk.HealthStatus)"
 }
