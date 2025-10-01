@@ -25,6 +25,9 @@ Write-Host "Current OS Name     : $($os.Caption)"
 Write-Host "OS Version          : $($os.Version)"
 Write-Host "OS Install Date     : $(Convert-WmiDate $os.InstallDate)"
 
+$productKey = (Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
+Write-Host "Product Key         : $productKey"
+
 Write-Host "`n========= MEMORY INFORMATION =========`n"
 
 $memory = Get-WmiObject Win32_PhysicalMemory
@@ -71,6 +74,16 @@ try {
     }
 } catch {
     Write-Host "CPU Temperature     : Not Available"
+}
+
+Write-Host "`n========= NETWORK INFORMATION =========`n"
+
+$adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+foreach ($adapter in $adapters) {
+    $wifi = Get-NetConnectionProfile -InterfaceAlias $adapter.Name -ErrorAction SilentlyContinue
+    Write-Host "Interface Name      : $($adapter.Name)"
+    Write-Host "Connected Network   : $($wifi.Name)"
+    Write-Host "MAC Address         : $($adapter.MacAddress)"
 }
 
 Write-Host "`n========= DISK INFORMATION =========`n"
